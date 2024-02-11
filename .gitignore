@@ -2,8 +2,15 @@
 # dist/
 .DS_Store
 DS_Store
-# .node_modules
-# node_modules
+
+# Ignore the node_modules folder
+node_modules/
+
+# Ignore the .env file
+.env
+
+# Ignore the the webstrom folder
+.idea/
 
 
 
