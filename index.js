@@ -1,125 +1,120 @@
-const filesystem = require('./node_modules/graceful-fs/graceful-fs')
-const inquirer = require("inquirer");
-const {Circle, Square, Triangle} = require("./lib/shapes");
-// Imports the graceful-fs, inquirer, Circle, Square, and Triangle modules.
-// Defines a Svg class that has a constructor with three methods for rendering and setting the text and shape elements in the SVG string.
+const inquirer = require('inquirer');
+const fs = require('fs');
+const {Circle, Triangle, Square, Rectangle} = require('./lib');
 
-class Svg{
-    constructor(){
-        this.textElement = ''
-        this.shapeElement = ''
-    }
-    render(){
 
-        return `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="300" height="200">${this.shapeElement}${this.textElement}</svg>`
-    }
-    setTextElement(text,color){
-        this.textElement = `<text x="150" y="125" font-size="60" text-anchor="middle" fill="${color}">${text}</text>`
-    }
-    setShapeElement(shape){
-        this.shapeElement = shape.render()
-
-    }
-    
-}
-
-// Defines array of 'questions' using the 'inquirer' library with the following questions.
-// Each question is an object that specifies the properties of TEXT, TEXT COLOR, SHAPE COLOR, and Pixel Image.
-const questions = [
-    {
-        type: "input",
-        name: "text",
-        message: "TEXT: Enter up to (3) Characters:",
-    },
-    {
-        type: "input",
-        name: "text-color",
-        message: "TEXT COLOR: Enter a color keyword (OR a hexadecimal number):",
-    },
-    {
-        type: "input",
-        name: "shape",
-        message: "SHAPE COLOR: Enter a color keyword (OR a hexadecimal number):",
-    },
-    {
-        type: "list",
-        name: "pixel-image",
-        message: "Choose which Pixel Image you would like?",
-        choices: ["Circle", "Square", "Triangle"],
-    },
-];
-
-// Function to write data to file
-function writeToFile(fileName, data) {
-	console.log("Writing [" + data + "] to file [" + fileName + "]")
-    filesystem.writeFile(fileName, data, function (err) {
-        if (err) {
-            return console.log(err);
+// Function to prompt user for text input with validation
+async function promptText() {
+    const response = await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'text',
+            message: 'Enter up to three characters for the logo text:',
+            validate: function (value) {
+                if (value.length > 3) {
+                    return 'Text should not exceed three characters.';
+                } else if (value.length < 1) {
+                    return 'Text should be at least one character.';
+                }
+                return true;
+            }
         }
-        console.log("Congratulations, you have Generated a logo.svg!");
-    });
+    ]);
+    return response.text;
 }
 
+// Function to prompt user for color input with validation
+async function promptColor(message) {
+    const response = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'colorChoice',
+            message: message,
+            choices: ['Color Name', 'Hexadecimal Number (e.g., #RRGGBB)']
+        },
+        {
+            type: 'list',
+            name: 'color',
+            message: 'Enter color name:',
+            when: (answers) => answers.colorChoice === 'Color Name',
+            choices: [
+                'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond',
+                'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
+                'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkgrey',
+                'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen',
+                'darkslateblue', 'darkslategray', 'darkslategrey', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue',
+                'dimgray', 'dimgrey', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite',
+                'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'grey', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory',
+                'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow',
+                'lightgray', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey',
+                'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid',
+                'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue',
+                'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid',
+                'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue',
+                'purple', 'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna',
+                'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato',
+                'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen'
+            ]
+        },
+        {
+            type: 'input',
+            name: 'color',
+            message: 'Enter color code (e.g., #RRGGBB):',
+            when: (answers) => answers.colorChoice === 'Hexadecimal Number (e.g., #RRGGBB)',
+            validate: function (value) {
+                if (!/^#[0-9A-F]{6}$/i.test(value)) {
+                    return 'Please enter a valid hexadecimal color code (e.g., #RRGGBB).';
+                }
+                return true;
+            }
+        }
+    ]);
+    return response.color;
+}
+
+// Function to prompt user for shape input
+async function promptShape() {
+    const response = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'shape',
+            message: 'Select a shape:',
+            choices: ['Circle', 'Triangle', 'Square', 'Rectangle']
+        }
+    ]);
+    return response.shape;
+}
+
+// Function to generate SVG file based on user input
+function generateSVG(text, textColor, shape, shapeColor) {
+    let logo;
+    switch (shape) {
+        case 'Circle':
+            logo = new Circle(text, textColor, shapeColor);
+            break;
+        case 'Triangle':
+            logo = new Triangle(text, textColor, shapeColor);
+            break;
+        case 'Square':
+            logo = new Square(text, textColor, shapeColor);
+            break;
+        case 'Rectangle':
+            logo = new Rectangle(text, textColor, shapeColor);
+            break;
+    }
+    const svgContent = logo.render();
+    fs.writeFileSync('logo.svg', svgContent);
+    console.log('Generated logo.svg');
+}
+
+// Main function to run the application
 async function init() {
-    console.log("Starting init");
-	var svgString = "";
-	var svg_file = "logo.svg";
-
-    // Prompt the user for answers
-    const answers = await inquirer.prompt(questions);
-
-	//user text
-	var user_text = "";
-	if (answers.text.length > 0 && answers.text.length < 4) {
-		// 1-3 chars, valid entry
-		user_text = answers.text;
-	} else {
-		// 0 or 4+ chars, invalid entry
-		console.log("Invalid user text field detected! Please enter 1-3 Characters, no more and no less");
-        return;
-	}
-	console.log("User text: [" + user_text + "]");
-	//user font color
-	user_font_color = answers["text-color"];
-	console.log("User font color: [" + user_font_color + "]");
-	//user shape color
-	user_shape_color = answers.shape;
-	console.log("User shape color: [" + user_shape_color + "]");
-	//user shape type
-	user_shape_type = answers["pixel-image"];
-	console.log("User entered shape = [" + user_shape_type + "]");
-	
-	//user shape
-	let user_shape;
-	if (user_shape_type === "Square" || user_shape_type === "square") {
-		user_shape = new Square();
-		console.log("User selected Square shape");
-	}
-	else if (user_shape_type === "Circle" || user_shape_type === "circle") {
-		user_shape = new Circle();
-		console.log("User selected Circle shape");
-	}
-	else if (user_shape_type === "Triangle" || user_shape_type === "triangle") {
-		user_shape = new Triangle();
-		console.log("User selected Triangle shape");
-	}
-	else {
-		console.log("Invalid shape!");
-	}
-	user_shape.setColor(user_shape_color);
-
-	// Create a new Svg instance and add the shape and text elements to it
-	var svg = new Svg();
-	svg.setTextElement(user_text, user_font_color);
-	svg.setShapeElement(user_shape);
-	svgString = svg.render();
-	
-	//Print shape to log
-	console.log("Displaying shape:\n\n" + svgString);
-	//document.getElementById("svg_image").innerHTML = svgString;
-
-	console.log("Shape generation complete!");
-	console.log("Writing shape to file...");
-	writeToFile(svg_file, svgString); 
+    const text = await promptText();
+    const textColor = await promptColor('Enter a color for the text:');
+    const shape = await promptShape();
+    const shapeColor = await promptColor('Enter a color for the shape:');
+    generateSVG(text, textColor, shape, shapeColor);
 }
-init()
+
+// Call the main function to start the application
+init();
