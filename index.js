@@ -101,6 +101,9 @@ function generateSVG(text, textColor, shape, shapeColor) {
         case 'Rectangle':
             logo = new Rectangle(text, textColor, shapeColor);
             break;
+        default:
+            console.error('Invalid shape selected.');
+            return;
     }
     const svgContent = logo.render();
     fs.writeFileSync('logo.svg', svgContent);
