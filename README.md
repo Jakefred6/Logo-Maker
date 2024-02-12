@@ -50,7 +50,11 @@ Follow the prompts to enter the text, text color, shape, and shape color for you
 
 ## 📸 Demo
 
-[Link to walkthrough video](#) - Include a link to the video demonstrating the functionality of the SVG Logo Maker and passing tests.
+
+https://github.com/Jakefred6/Logo-Maker/assets/142133969/bc8a55e4-c978-427b-9513-e27a0ae0cde0
+
+
+[Link to walkthrough video](https://github.com/Jakefred6/Logo-Maker/assets/142133969/bc8a55e4-c978-427b-9513-e27a0ae0cde0) - Include a link to the video demonstrating the functionality of the SVG Logo Maker and passing tests.
 
 ## 🧪 Testing
 
